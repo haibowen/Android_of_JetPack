@@ -1,17 +1,23 @@
 package com.haibowen.myjetpackdemo
 
+import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import com.easypermissionx.hyploo.EasyPermissionX
 import com.haibowen.myjetpackdemo.db.AppDatabase
 import com.haibowen.myjetpackdemo.lifecycles.MyObserver2
 import com.haibowen.myjetpackdemo.model.People
+import com.haibowen.myjetpackdemo.model.SimpleWorker
 import com.haibowen.myjetpackdemo.viewmodel.Main2ViewModel
 import com.haibowen.myjetpackdemo.viewmodel.Main2ViewModelFactory
 import kotlinx.android.synthetic.main.activity_main2.*
@@ -22,7 +28,6 @@ class Main2Activity : AppCompatActivity() {
     lateinit var viewModel: Main2ViewModel
 
     lateinit var sp: SharedPreferences
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,8 +87,33 @@ class Main2Activity : AppCompatActivity() {
             viewModel.plusOne()
         }
 
+        //清除的按钮
         bt_clean_second.setOnClickListener {
             viewModel.clear()
+        }
+
+        //worker
+        bt_work.setOnClickListener {
+            val request = OneTimeWorkRequest.Builder(
+                SimpleWorker::class.java
+            ).build()
+            WorkManager.getInstance(this).enqueue(request)
+        }
+
+        //permission
+        bt_permission.setOnClickListener {
+
+            EasyPermissionX.request(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) { allGranted, deniedList ->
+                if (allGranted) {
+
+                } else {
+                    Toast.makeText(this, "你拒绝了使用$deniedList" + "权限", Toast.LENGTH_SHORT).show()
+                }
+            }
+
         }
 
         viewModel.counter.observe(this, Observer { count ->
